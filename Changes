@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    - Version in modules now managed by Dist::Zilla plugin
 
 0.04      2013-05-23 23:02:23 Europe/Madrid
     - Some POD errors fixed

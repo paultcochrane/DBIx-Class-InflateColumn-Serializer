@@ -3,8 +3,6 @@ package DBIx::Class::InflateColumn::Serializer;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
-
 sub register_column {
     my $self = shift;
     my ($column, $info, $args) = @_;
