@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use utf8;
 use Test::More;
 use Test::Exception;
 use lib qw(t/lib);
@@ -11,7 +12,7 @@ use DBICTest;
 
 my $schema = DBICTest->init_schema();
 
-plan tests => 9;
+plan tests => 10;
 
 my $struct_hash = {
     b => 1,
@@ -19,6 +20,7 @@ my $struct_hash = {
         { d => 2 },
     ],
     e => 3,
+    house => 'château',
 };
 
 my $struct_array = [
@@ -38,6 +40,12 @@ $stored = $rs->create({
 });
 
 ok($stored->update({ 'serial1' => $struct_hash, 'serial2' => $struct_array }), 'deflation');
+
+my $raw = $schema->storage->dbh_do(sub {
+    my ($storage, $dbh, @args) = @_;
+    $dbh->selectrow_hashref('SELECT * from testtable WHERE testtable_id = ?', {}, $stored->testtable_id);
+});
+like($raw->{serial1}, qr/"château"/, 'raw data contains unicode, as-is, without transformation');
 
 #retrieve what was serialized from DB
 undef $stored;
