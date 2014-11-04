@@ -7,12 +7,9 @@ use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
 
-#eval { require JSON::Any };
-#plan( skip_all => 'JSON::Any not installed; skipping' ) if $@;
-
 my $schema = DBICTest->init_schema();
 
-plan tests => 10;
+plan tests => 12;
 
 my $struct_hash = {
     b => 1,
@@ -32,6 +29,8 @@ my $struct_array = [
     'e',
 ];
 
+my $struct_int = 42;
+
 my $rs = $schema->resultset("SerializeJSON");
 my ($stored, $inflated);
 
@@ -39,7 +38,7 @@ $stored = $rs->create({
   'testtable_id' => 2
 });
 
-ok($stored->update({ 'serial1' => $struct_hash, 'serial2' => $struct_array }), 'deflation');
+ok($stored->update({ 'serial1' => $struct_hash, 'serial2' => $struct_array, 'serial3' => $struct_int }), 'deflation');
 
 my $raw = $schema->storage->dbh_do(sub {
     my ($storage, $dbh, @args) = @_;
@@ -55,6 +54,8 @@ ok($inflated = $stored->serial1, 'hashref inflation');
 is_deeply($inflated, $struct_hash, 'the stored hash and the orginial are equal');
 ok($inflated = $stored->serial2, 'arrayref inflation');
 is_deeply($inflated, $struct_array, 'the stored array and the orginial are equal');
+ok($inflated = $stored->serial3, 'int inflation (allowing nonrefs)');
+is_deeply($inflated, $struct_int, 'the stored int and the original are equal');
 
 throws_ok(sub {
   $stored->update({ 'serial1' => { 'bigkey' => 'n' x 1024 }
