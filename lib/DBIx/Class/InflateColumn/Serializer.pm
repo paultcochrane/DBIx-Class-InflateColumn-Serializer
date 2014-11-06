@@ -107,6 +107,8 @@ Matt S Trout for his valuable feedback
 
 Ask Bjorn Hansen
 
+Karen Etheridge
+
 =head1 SEE ALSO
 
 DBIx::Class, DBIx::Class::Manual::FAQ
