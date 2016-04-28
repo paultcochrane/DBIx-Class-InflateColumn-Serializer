@@ -1,3 +1,4 @@
+use utf8;
 use strict;
 use warnings;
 
@@ -6,10 +7,15 @@ use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
 
+my $builder = Test::More->builder;
+binmode $builder->output,         ":encoding(utf8)";
+binmode $builder->failure_output, ":encoding(utf8)";
+binmode $builder->todo_output,    ":encoding(utf8)";
+
 #eval { require YAML };
 #plan( skip_all => 'YAML not installed; skipping' ) if $@;
 
-plan tests => 9;
+plan tests => 11;
 
 my $schema = DBICTest->init_schema();
 
@@ -19,6 +25,8 @@ my $struct_hash = {
         { e => 2 },
     ],
     f => 3,
+    house => 'château',
+    heart => "\x{2764}",
 };
 
 my $struct_array = [
@@ -38,6 +46,13 @@ $stored = $rs->create({
 });
 
 ok($stored->update({ 'serial1' => $struct_hash, 'serial2' => $struct_array }), 'deflation');
+
+my $raw = $schema->storage->dbh_do(sub {
+    my ($storage, $dbh, @args) = @_;
+    $dbh->selectrow_hashref('SELECT * from testtable WHERE testtable_id = ?', {}, $stored->testtable_id);
+});
+like($raw->{serial1}, qr/château/, "raw data contains unicode, as-is, without transformation (latin1-ish 'château')");
+like($raw->{serial1}, qr/\x{2764}/, "raw data contains unicode, as-is, without transformation (utf8-ish '\x{2764}')");
 
 #retrieve what was serialized from DB
 undef $stored;
