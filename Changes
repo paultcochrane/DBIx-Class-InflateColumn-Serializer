@@ -2,6 +2,10 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.08      2016-04-29 22:18:08+01:00 Europe/London
+    - Tests improved. Ensuring UTF8 encoding works properly. Thanks to kaoru
+      for the PR
+
 0.07      2014-11-06 20:34:13+00:00 Europe/London
     - Switch JSON backend JSON::MaybeXS. Thanks to ether for the PR
 
