@@ -6,6 +6,11 @@ use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
 
+my $builder = Test::More->builder;
+binmode $builder->output,         ":encoding(utf8)";
+binmode $builder->failure_output, ":encoding(utf8)";
+binmode $builder->todo_output,    ":encoding(utf8)";
+
 #eval { require Storable };
 #plan( skip_all => 'Storable not installed; skipping' ) if $@;
 
@@ -28,6 +33,8 @@ my $struct_array = [
         c => 2
     },
     'd',
+    house => 'château',
+    heart => "\x{2764}",
 ];
 
 my $rs = $schema->resultset("SerializeStorable");

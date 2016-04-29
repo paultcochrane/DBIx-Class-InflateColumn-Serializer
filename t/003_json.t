@@ -7,9 +7,14 @@ use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
 
+my $builder = Test::More->builder;
+binmode $builder->output,         ":encoding(utf8)";
+binmode $builder->failure_output, ":encoding(utf8)";
+binmode $builder->todo_output,    ":encoding(utf8)";
+
 my $schema = DBICTest->init_schema();
 
-plan tests => 12;
+plan tests => 13;
 
 my $struct_hash = {
     b => 1,
@@ -18,6 +23,7 @@ my $struct_hash = {
     ],
     e => 3,
     house => 'château',
+    heart => "\x{2764}",
 };
 
 my $struct_array = [
@@ -44,7 +50,8 @@ my $raw = $schema->storage->dbh_do(sub {
     my ($storage, $dbh, @args) = @_;
     $dbh->selectrow_hashref('SELECT * from testtable WHERE testtable_id = ?', {}, $stored->testtable_id);
 });
-like($raw->{serial1}, qr/"château"/, 'raw data contains unicode, as-is, without transformation');
+like($raw->{serial1}, qr/"château"/, "raw data contains unicode, as-is, without transformation (latin1-ish 'château')");
+like($raw->{serial1}, qr/"\x{2764}"/, "raw data contains unicode, as-is, without transformation (utf8-ish '\x{2764}')");
 
 #retrieve what was serialized from DB
 undef $stored;
